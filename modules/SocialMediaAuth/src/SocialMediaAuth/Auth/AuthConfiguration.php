@@ -26,6 +26,11 @@ class AuthConfiguration
 		$this->configurator = $config;
 	}
 	
+	public function getConfigurator()
+	{
+		return $this->configurator;
+	}
+	
 	public function getAllAuthAdapters()
 	{
 		$authAdapters[] = array();
@@ -45,6 +50,11 @@ class AuthConfiguration
 	
 	public function getActivatedAuthAdapters()
 	{
-		
+		return $this->configurator->getActiveAuthAdapters();
+	}
+	
+	public function getAdapter($name)
+	{
+		return $this->configurator->getNamedAuthAdapter($name);
 	}
 }

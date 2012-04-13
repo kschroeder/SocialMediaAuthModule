@@ -1,0 +1,13 @@
+<?php foreach ($this->adapters as $adapter) : ?>
+<div class="socialMediaAdapterContainer" id="socialMediaAuthAdapter-<?php echo get_class($adapter); ?>">
+	<a href="">
+	<?php if ($adapter->getImage()):?>
+		<img src="<?php echo $adapter->getImage(); ?>" />
+	<?php endif; ?>
+	
+	<?php if ($adapter->getText()):?>
+		<img src="<?php echo $this->escape($adapter->getText()) ?>" />
+	<?php endif; ?>
+	</a>
+</div>
+<?php endforeach; ?>

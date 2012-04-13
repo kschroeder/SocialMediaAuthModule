@@ -1,7 +1,5 @@
 <?php
+
 namespace SocialMediaAuth\Auth\Configuration;
 
-interface Configurator
-{
-	
-}
+class InvalidAdapterException extends \Exception {}
