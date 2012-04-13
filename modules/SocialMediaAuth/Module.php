@@ -2,10 +2,7 @@
 
 namespace SocialMediaAuth;
 
-use Zend\EventManager\Event,
-	Zend\Module\Manager,
-    Zend\EventManager\StaticEventManager,
-    Zend\Module\Consumer\AutoloaderProvider;
+use Zend\Module\Consumer\AutoloaderProvider;
 
 class Module implements AutoloaderProvider
 {
