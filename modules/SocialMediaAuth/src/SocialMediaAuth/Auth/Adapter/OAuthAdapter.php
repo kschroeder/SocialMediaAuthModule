@@ -1,6 +1,6 @@
 <?php
 
-namespace SocialMediaAuth\Auth;
+namespace SocialMediaAuth\Auth\Adapter;
 
 use Zend\Session\Container;
 
@@ -10,16 +10,16 @@ use Zend\Config\Config;
 
 use Zend\OAuth\Consumer;
 
-use SocialMediaAuth\Auth\AuthAdapter;
+use SocialMediaAuth\Auth\Adapter\AbstractAdapter;
 
-abstract class OAuthAdapter extends AuthAdapter
+abstract class OAuthAdapter extends AbstractAdapter
 {
 	
 	protected $key;
 	protected $secret;
 	protected $accessToken;
 	protected $accessTokenSecret;
-	protected $callbackUrl;
+	protected $accessTokenResult;
 	
 	public abstract function getSiteUrl();
 	
@@ -44,14 +44,6 @@ abstract class OAuthAdapter extends AuthAdapter
 		return $this->accessTokenSecret;
 	}
 
-	public function getCallbackUrl() 
-	{
-		return $this->callbackUrl;
-	}
-
-	public function setCallbackUrl($callbackUrl) {
-		$this->callbackUrl = $callbackUrl;
-	}
 
 	public function setConsumerKey($key)
 	{
@@ -64,21 +56,35 @@ abstract class OAuthAdapter extends AuthAdapter
 	}
 	
 	/**
+	 * @return Access 
+	 */
+	
+	public function getAccessTokenResult()
+	{
+		return $this->accessTokenResult;
+	}
+	
+	/**
 	 * @return Config
 	 */
 	
 	public function getConfig()
 	{
-		$config = new Config(
-			array(
-				'consumerKey' 		=> $this->key,
-				'consumerSecret' 	=> $this->secret
-			)
+		
+		$options = array(
+			'consumerKey' 		=> $this->key,
+			'consumerSecret' 	=> $this->secret,
+			'siteUrl'			=> $this->getSiteUrl()
 		);
 		
 		if ($this->callbackUrl) {
-			$config['callbackUrl'] = $this->callbackUrl;
+			$options['callbackUrl']	= $this->callbackUrl;
 		}
+		
+		$config = new Config(
+			$options
+		);
+		
 		return $config;		
 	}
 	
@@ -90,23 +96,29 @@ abstract class OAuthAdapter extends AuthAdapter
 		$token = $oauth->getRequestToken();
 		
 		$session = new Container(get_class($this));
-		$session->token = $token;
+		$session['token'] = $token;
 		
-		$oauth->redirect();		
+		$oauth->redirect();
 	}
 
 	public function isValidLogin() 
 	{
-		$session = new Container(get_class($this));
-		$config = $this->getConfig();
-		$oauth = new Consumer($config);
+		$token = null;
 		
-		$token = $oauth->getAccessToken(
-			$this->request->query(),
-			$session->token
-		);
+		try {
+			$session = new Container(get_class($this));
+			$config = $this->getConfig();
+			$oauth = new Consumer($config);
+			
+			$token = $oauth->getAccessToken(
+				$this->request->query()->toArray(),
+				$session['token']
+			);
+		} catch (\Exception $e) {
+			return false;
+		}
 		if ($token) {
-			$this->accessToken = $token;
+			$this->accessTokenResult = $token;
 			return true;
 		} else {
 			return false;

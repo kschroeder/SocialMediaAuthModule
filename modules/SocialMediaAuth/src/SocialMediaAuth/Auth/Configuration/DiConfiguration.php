@@ -2,7 +2,8 @@
 
 namespace SocialMediaAuth\Auth\Configuration;
 
-use SocialMediaAuth\Auth\AuthAdapter;
+
+use SocialMediaAuth\Auth\Adapter\AbstractAdapter;
 
 use Zend\Di\Locator;
 
@@ -16,12 +17,12 @@ class DiConfiguration implements Configurator, LocatorAware
 	protected $activeAuthAdapters = array();
 	protected $locator;
 	
-	public function activateAuthAdapter(AuthAdapter $adapter)
+	public function activateAuthAdapter(AbstractAdapter $adapter)
 	{
 		throw new InvalidCommandException('Cannot modify configuration');
 	}
 
-	public function deactivateAuthAdapter(AuthAdapter $adapter)
+	public function deactivateAuthAdapter(AbstractAdapter $adapter)
 	{
 		throw new InvalidCommandException('Cannot modify configuration');
 	}
@@ -43,20 +44,26 @@ class DiConfiguration implements Configurator, LocatorAware
 	{
 		$this->locator = $locator;
 	}
+	
+	public function addActiveAuthAdapter($adapter)
+	{
+		if (is_string($adapter)) {
+			$this->activeAuthAdapters[] = $adapter;
+		}
+	}
 
 	public function setActiveAuthAdapters(array $activeAdapters)
 	{
 		$this->activeAuthAdapters = array();
 		foreach ($activeAdapters as $adapter) {
-			if (is_string($adapter)) {
-				$this->activeAuthAdapters[] = $adapter;
-			}
+			$this->addActiveAuthAdapter($adapter);
 		}
 	}
 	
 	public function getNamedAuthAdapter($name)
 	{
-		$className = 'SocialMediaAuth\Auth\\' . $name;
+		$name = ucfirst($name);
+		$className = 'SocialMediaAuth\Auth\Adapter\\' . $name;
 		// Check to see if it's activated first.
 		if (!in_array($name, $this->activeAuthAdapters)
 			&& !in_array($className, $this->activeAuthAdapters)) {
@@ -72,9 +79,14 @@ class DiConfiguration implements Configurator, LocatorAware
 					$adapter = $this->getLocator()->get($name);
 				} catch (\Zend\Di\Exception\ClassNotFoundException $e) {}	
 			}
+		} else {
+			try {
+				$adapter = $this->getLocator()->get($name);
+			} catch (\Zend\Di\Exception\ClassNotFoundException $e) {
+			}
 		}
 		// Null or adapter does not extend AuthAdapter
-		if (!$adapter instanceof AuthAdapter) {
+		if (!$adapter instanceof AbstractAdapter) {
 			throw new InvalidAdapterException();
 		}
 		return $adapter;

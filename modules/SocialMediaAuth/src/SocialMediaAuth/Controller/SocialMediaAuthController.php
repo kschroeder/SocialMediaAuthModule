@@ -2,6 +2,10 @@
 
 namespace SocialMediaAuth\Controller;
 
+use SocialMediaAuth\Auth\Adapter\AbstractAdapter;
+
+use Zend\Http\Request;
+
 use Zend\Session\Container;
 
 use ZendTest\Captcha\TestAsset\SessionContainer;
@@ -22,9 +26,10 @@ use Zend\Mvc\Controller\ActionController;
 
 class SocialMediaAuthController extends ActionController
 {
+	
 	public function indexAction()
 	{
-		$adapterName = $this->getEvent()->getParam('authAdapter');
+		$adapterName = $this->getEvent()->getParam('adapter');
 		$auth = $this->getLocator()->get('SocialMediaAuth\Auth\AuthConfiguration');
 		/* @var $auth \SocialMediaAuth\Auth\AuthConfiguration */
 		if (!$adapterName) {
@@ -40,20 +45,29 @@ class SocialMediaAuthController extends ActionController
 			
 		$adapter = $auth->getAdapter($adapterName);
 		
+		if (!$adapter instanceof AbstractAdapter) {
+			throw new NoAdapterException('Unable to find an activated adapter by that name');
+		}
+		
 		$session = new Container('socialmediaauth');
-		$session->adapter = $adapterName;
+		$session['adapter'] = $adapterName;
 		
 		$adapter->setRequest($this->request);
 		$adapter->setResponse($this->response);
-		$adapter->setCallbackUrl(
-			$this->url(
-				array(
-					'action'	=> 'auth'
-				)
-			)
-		);
+		$uri = $this->request->uri();
 		
-		$this->events()->trigger('socialmediaauth.prerequest', $adapter);
+		$adapter->setCallbackUrl(
+			$uri->getScheme()
+			. '://'
+			. $uri->getHost()
+			. $this->url()->fromRoute('smauth',
+				array(
+					'controller'	=> 'auth',
+					'action'		=> 'auth',
+				) 
+			)
+		); 
+		
 		$adapter->handleInitialRequest();		
 		
 	}
@@ -80,9 +94,9 @@ class SocialMediaAuthController extends ActionController
 			throw new InvalidAdapterException('Unable to find a configuration');
 		}
 		$session = new Container('socialmediaauth');
-		$adapter = $config->getAdapter($session->adapter);
+		$adapter = $config->getAdapter($session['adapter']);
 		
-		if (!$adapter instanceof AuthAdapter) {
+		if (!$adapter instanceof AbstractAdapter) {
 			throw new InvalidAdapterException('Invalid adapter specified');
 		}
 		
@@ -94,4 +108,5 @@ class SocialMediaAuthController extends ActionController
 			$this->events()->trigger('socialmediaauth.failure', $adapter);
 		}
 	}
+	
 }

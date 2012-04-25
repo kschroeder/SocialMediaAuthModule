@@ -27,10 +27,10 @@ class SocialMediaAuthControllerTest extends TestCase
 	public function setUp()
 	{
 		$di = $this->getDiInstance();
-		$this->controller = $di->get('SocialMediaAuth\Controller\SocialMediaAuthController');
+		$this->controller = $di->get('SocialMediaAuth\Controller\IndexController');
 		$this->request    = new Request();
 		$this->response   = new Response();
-		$this->routeMatch = new RouteMatch(array('controller' => 'social-media-auth'));
+		$this->routeMatch = new RouteMatch(array('controller' => 'index'));
 		$this->event      = new MvcEvent();
 		$this->event->setRouteMatch($this->routeMatch);
 		$this->controller->setEvent($this->event);
@@ -61,17 +61,21 @@ class SocialMediaAuthControllerTest extends TestCase
 		
 		$config = new Configuration(
 			array(
-				'instances'	=> array(
+				'instance' => array(
 					'preferences'	=> array(
-							'SocialMediaAuth\Auth\Configuration\Configurator'
+						'SocialMediaAuth\Auth\Configuration\Configurator'
 							=> 'SocialMediaAuth\Auth\Configuration\DiConfiguration'
 					),
 					'SocialMediaAuth\Auth\Configuration\DiConfiguration' => 
 						array(
-							'activeAdapters' => array('SocialMediaAuthTestAdapter')
-					)					
-				)
-			)
+							'parameters'	=> array(
+								'activeAdapters' => array(
+									'SocialMediaAuthTestAdapter'
+								)
+							)
+					    )
+				   )
+			  )
 		);
 		
 		$di = new Di();

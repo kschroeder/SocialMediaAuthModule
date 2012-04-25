@@ -53,7 +53,9 @@ class SocialMediaAuthDiTest extends PHPUnit_Framework_TestCase
 					'SocialMediaAuth\Auth\Configuration\DiConfiguration' => 
 						array(
 							'parameters'	=> array(
-								'SocialMediaAuth\Auth\Configuration\DiConfiguration::setActiveAuthAdapters:0' => array('SocialMediaAuthTestAdapter')
+								'activeAdapters' => array(
+									'SocialMediaAuthTestAdapter'
+								)
 							)
 					    )
 				   )

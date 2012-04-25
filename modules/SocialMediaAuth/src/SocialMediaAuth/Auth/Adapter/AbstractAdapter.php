@@ -1,12 +1,12 @@
 <?php
 
-namespace SocialMediaAuth\Auth;
+namespace SocialMediaAuth\Auth\Adapter;
 
 use Zend\Http\Response;
 
 use Zend\Http\Request;
 
-abstract class AuthAdapter
+abstract class AbstractAdapter
 {
 	/**
 	 * 
@@ -22,6 +22,17 @@ abstract class AuthAdapter
 	protected $messages = array();
 	protected $image;
 	protected $text;
+	protected $callbackUrl;
+	
+	public function setCallbackUrl($callbackUrl)
+	{
+		$this->callbackUrl = $callbackUrl;
+	}
+	
+	public function getCallbackUrl()
+	{
+		return $this->callbackUrl;
+	}
 	
 	public function setRequest(Request $request)
 	{

@@ -2,6 +2,8 @@
 namespace SocialMediaAuth\Auth;
 
 
+use SocialMediaAuth\Auth\Configuration\InvalidAdapterException;
+
 use SocialMediaAuth\Auth\Configuration\Configurator;
 
 use Zend\Db\Adapter\Adapter;
@@ -41,7 +43,7 @@ class AuthConfiguration
 			/* @var $classScanner Zend\Code\Scanner\FileScanner */
 			$r = new FileReflection($classScanner->getFile());
 			$class = $r->getClass();
-			if ($class->isSubclassOf('SocialMediaAuth\Auth\AuthAdapter') && $class->isInstantiable()) {
+			if ($class->isSubclassOf('SocialMediaAuth\Auth\Adapter\AbstractAdapter') && $class->isInstantiable()) {
 				$authAdapters[] = $class->newInstance();
 			}
 		}
@@ -55,6 +57,9 @@ class AuthConfiguration
 	
 	public function getAdapter($name)
 	{
+		if (!ctype_alnum($name)) {
+			throw new InvalidAdapterException('Invalid characters in adapter name');
+		}
 		return $this->configurator->getNamedAuthAdapter($name);
 	}
 }

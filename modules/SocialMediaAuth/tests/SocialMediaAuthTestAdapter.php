@@ -1,8 +1,10 @@
 <?php
 
+use SocialMediaAuth\Auth\Adapter\AbstractAdapter;
+
 use SocialMediaAuth\Auth\AuthAdapter;
 
-class SocialMediaAuthTestAdapter extends AuthAdapter
+class SocialMediaAuthTestAdapter extends AbstractAdapter
 {
 	public function handleInitialRequest() {
 		$this->request->setMetadata('requestHandled', true);
